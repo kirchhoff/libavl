@@ -650,6 +650,8 @@ int get_data_recur(node n, void *data, size_t data_size)
  */
 tree *init_dictionnary()
 {
+    DLOG("Create new tree");
+
     // New tree allocation
     tree *t = malloc(sizeof(tree));
 
