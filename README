@@ -1,0 +1,7 @@
+libavl
+======
+
+Libavl is a library to manage AVL structure to store and organize
+everykind of data. You just need to implement function to compare,
+to desallocate and to print your structure.
+
