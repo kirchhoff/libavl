@@ -1,7 +1,8 @@
 /*   
- *   Libavl is a library to manage AVL structure to store and organize
- *   every kind of data. You just need to implement function to compare,
- *   to desallocate and print your structure.
+ *   Mymeco (or My Media Collector) is a software that give you all tools
+ *   to manage your video collection. This include fetching meta-information
+ *   of video like director, actors or synopsis directly from internet or
+ *   technical information like codec, resolution from video file itself.
  *   
  *   Copyright (C) 2011 Adrien Oliva
  *
@@ -78,7 +79,7 @@
  *
  * \warning If you use this function you probably make a mistake.
  */
-int is_present_recur(node n, void *d)
+int is_present_recur(node n, void *d, int (*data_cmp) (void *, void *))
 {
     int cmp = 0;
 
@@ -87,7 +88,7 @@ int is_present_recur(node n, void *d)
         return 0;
 
     // Compare data
-    cmp = avl_data_cmp(n->data, d);
+    cmp = data_cmp(n->data, d);
 
     if (cmp == 0)
         // Node found, return true
@@ -95,15 +96,15 @@ int is_present_recur(node n, void *d)
     else if (cmp > 0)
         // Current node is higher than data to look for,
         // need to go to left subtree.
-        return is_present_recur(n->left, d);
+        return is_present_recur(n->left, d, data_cmp);
     else
         // Current node is smaller than data to look for,
         // need to go to right subtree.
-        return is_present_recur(n->right, d);
+        return is_present_recur(n->right, d, data_cmp);
 }
 
 /** Use for debug only. Print recursive level of inserted element */
-int level_insert = 0;
+static int level_insert = 0;
 
 /** \fn int height_tree(node tree);
  * \brief Give the height of tree.
@@ -116,12 +117,12 @@ int level_insert = 0;
  *
  * \warning If you use this function you probably make a mistake.
  */
-int height_tree(node tree)
+unsigned int height_tree(node n)
 {
-    if (tree == NULL)
+    if (n == NULL)
         return 0;
 
-    return tree->height;
+    return n->height;
 }
 
 /** \fn void adjust_tree_height(node tree);
@@ -133,18 +134,18 @@ int height_tree(node tree)
  *
  * \warning If you use this function you probably make a mistake.
  */
-void adjust_tree_height(node tree)
+void adjust_tree_height(node n)
 {
-    int h1;
-    int h2;
+    unsigned int h1;
+    unsigned int h2;
 
-    h1 = height_tree(tree->left);
-    h2 = height_tree(tree->right);
+    h1 = height_tree(n->left);
+    h2 = height_tree(n->right);
 
     if (h1 > h2)
-        tree->height = h1 + 1;
+        n->height = h1 + 1;
     else
-        tree->height = h2 + 1;
+        n->height = h2 + 1;
 }
 
 /** \fn node rotate_tree_right(node tree);
@@ -155,12 +156,12 @@ void adjust_tree_height(node tree)
  *
  * \warning If you use this function you probably make a mistake.
  */
-node rotate_tree_right(node tree)
+node rotate_tree_right(node n)
 {
-    node temp = tree->left;
-    tree->left = temp->right;
-    adjust_tree_height(tree);
-    temp->right = tree;
+    node temp = n->left;
+    n->left = temp->right;
+    adjust_tree_height(n);
+    temp->right = n;
     adjust_tree_height(temp);
     return temp;
 }
@@ -173,12 +174,12 @@ node rotate_tree_right(node tree)
  *
  * \warning If you use this function you probably make a mistake.
  */
-node rotate_tree_left(node tree)
+node rotate_tree_left(node n)
 {
-    node temp = tree->right;
-    tree->right = temp->left;
-    adjust_tree_height(tree);
-    temp->left = tree;
+    node temp = n->right;
+    n->right = temp->left;
+    adjust_tree_height(n);
+    temp->left = n;
     adjust_tree_height(temp);
     return temp;
 }
@@ -194,28 +195,28 @@ node rotate_tree_left(node tree)
  *
  * \warning If you use this function you probably make a mistake.
  */
-node equi_left(node tree)
+node equi_left(node n)
 {
 
-    node son = tree->left;
+    node son = n->left;
 
     DLOG("height tree: tree(%d) | left (%d) | right (%d) | son (%d)",
-            height_tree(tree),
-            height_tree(tree->left),
-            height_tree(tree->right),
+            height_tree(n),
+            height_tree(n->left),
+            height_tree(n->right),
             height_tree(son));
-    if (height_tree(son) > height_tree(tree->right) + 1) {
+    if (height_tree(son) > height_tree(n->right) + 1) {
         if (height_tree(son->right) > height_tree(son->left)) {
             DLOG("Need rotate left");
-            tree->left = rotate_tree_left(tree->left);
+            n->left = rotate_tree_left(n->left);
         }
         DLOG("Need rotate right");
-        tree = rotate_tree_right(tree);
+        n = rotate_tree_right(n);
     } else {
         DLOG("No rotate");
-        adjust_tree_height(tree);
+        adjust_tree_height(n);
     }
-    return tree;
+    return n;
 }
 
 /** \fn node equi_right(node tree);
@@ -228,18 +229,18 @@ node equi_left(node tree)
  *
  * \warning If you use this function you probably make a mistake.
  */
-node equi_right(node tree)
+node equi_right(node n)
 {
-    node son = tree->right;
+    node son = n->right;
 
-    if (height_tree(son) > height_tree(tree->left) + 1) {
+    if (height_tree(son) > height_tree(n->left) + 1) {
         if (height_tree(son->left) > height_tree(son->right))
-            tree->right = rotate_tree_right(tree->right);
-        tree = rotate_tree_left(tree);
+            n->right = rotate_tree_right(n->right);
+        n = rotate_tree_left(n);
     } else {
-        adjust_tree_height(tree);
+        adjust_tree_height(n);
     }
-    return tree;
+    return n;
 }
 
 
@@ -251,7 +252,7 @@ node equi_right(node tree)
  * 
  * \warning If you use this function you probably make a mistake.
  */
-int delete_node_min_recur(node *n)
+int delete_node_min_recur(node *n, void (*data_delete) (void *))
 {
     node aux = NULL;
     int result;
@@ -264,12 +265,12 @@ int delete_node_min_recur(node *n)
         // is the minimum node stored in tree.
         aux = *n;
         *n = aux->right;
-        avl_data_delete(aux->data);
+        data_delete(aux->data);
         free(aux);
         return 1;
     } else {
         // not the minimum, go deep
-        result = delete_node_min_recur(&((*n)->left));
+        result = delete_node_min_recur(&((*n)->left), data_delete);
         // balance resulting tree
         *n = equi_right(*n);
     }
@@ -287,7 +288,9 @@ int delete_node_min_recur(node *n)
  * 
  * \warning If you use this function you probably make a mistake.
  */
-int delete_node_recur(node *root, void *data)
+int delete_node_recur(node *root, void *data,
+                      int (*data_cmp) (void *, void *),
+                      void (*data_delete) (void *))
 {
     int cmp = 0;
     int result = 0;
@@ -298,7 +301,7 @@ int delete_node_recur(node *root, void *data)
         return 0;
     }
 
-    cmp = avl_data_cmp(data, (*root)->data);
+    cmp = data_cmp(data, (*root)->data);
     if (cmp == 0) {
         // Current node is the node to delete.
         if ((*root)->right == NULL) {
@@ -308,7 +311,7 @@ int delete_node_recur(node *root, void *data)
             *root = (*root)->left;
 
             // release memory used in node.
-            avl_data_delete(aux->data);
+            data_delete(aux->data);
             free(aux);
         } else {
             // There is a right subtree.
@@ -328,7 +331,7 @@ int delete_node_recur(node *root, void *data)
             temp->data = d;
 
             // delete minimum node.
-            delete_node_min_recur(&((*root)->right));
+            delete_node_min_recur(&((*root)->right), data_delete);
             // rebalance subtree.
             *root = equi_left(*root);
         }
@@ -336,13 +339,13 @@ int delete_node_recur(node *root, void *data)
     } else if (cmp > 0) {
         // current node is smaller than node to delete
         // go down into right subtree.
-        result = delete_node_recur(&((*root)->right), data);
+        result = delete_node_recur(&((*root)->right), data, data_cmp, data_delete);
         // rebalance subtree.
         *root = equi_left(*root);
     } else {
         // current node is higher than node to delete
         // go down into left subtree.
-        result = delete_node_recur(&((*root)->left), data);
+        result = delete_node_recur(&((*root)->left), data, data_cmp, data_delete);
         // rebalance subtree.
         *root = equi_right(*root);
     }
@@ -359,23 +362,23 @@ int delete_node_recur(node *root, void *data)
  *
  * \warning If you use this function you probably make a mistake.
  */
-int insert_elmt_recur(node *tree, node add_node) 
+int insert_elmt_recur(node *n, node add_node, int (*data_cmp) (void *, void *))
 {
     int present = 0; // 1 means that data already present
     int cmp;
 
     // Here is the end of a tree. It must create new node here
     DLOG("Insert %p at level %d", add_node, level_insert);
-    if (*tree == NULL) {
-        (*tree) = add_node;
-        (*tree)->height = 1;
-        (*tree)->left = NULL;
-        (*tree)->right = NULL;
+    if (*n == NULL) {
+        (*n) = add_node;
+        (*n)->height = 1;
+        (*n)->left = NULL;
+        (*n)->right = NULL;
 
         return 0;
     }
 
-    cmp = avl_data_cmp((*tree)->data, add_node->data);
+    cmp = data_cmp((*n)->data, add_node->data);
 
     // Check if current node is the node you want to add
     if (cmp == 0)
@@ -386,12 +389,12 @@ int insert_elmt_recur(node *tree, node add_node)
         // Current node is higher that node you want to add
         // Insert it on left subtree.
         DLOG("Down into left level %d", ++level_insert);
-        present = insert_elmt_recur(&(*tree)->left, add_node);
+        present = insert_elmt_recur(&(*n)->left, add_node, data_cmp);
         DLOG("Out of level %d", level_insert--);
 
         if (!present) {
             // node was really inserted, need to re-balance tree
-            *tree = equi_left(*tree);
+            *n = equi_left(*n);
             return 0;
         } else
             // node not inserted in subtree
@@ -400,12 +403,12 @@ int insert_elmt_recur(node *tree, node add_node)
         // Current node is smaller that node you want to add
         // Insert it on right subtree.
         DLOG("Down into right level %d", ++level_insert);
-        present = insert_elmt_recur(&(*tree)->right, add_node);
+        present = insert_elmt_recur(&(*n)->right, add_node, data_cmp);
         DLOG("Out of level %d", level_insert--);
 
         if (!present) {
             // node was really inserted, need to re-balance tree
-            *tree = equi_right(*tree);
+            *n = equi_right(*n);
             return 0;
         } else
             // node not inserted in subtree
@@ -426,49 +429,48 @@ int insert_elmt_recur(node *tree, node add_node)
  *
  * \warning If you use this function you probably make a mistake.
  */
-void verif_avl(node tree,
+void verif_avl(node n,
         int tree_min,
         int tree_max,
         void *data_min,
-        void *data_max)
+        void *data_max,
+        int (*data_cmp) (void *, void *))
 {
     unsigned hg;
     unsigned hd;
 
     // Check order of data.
-    if (tree_min && avl_data_cmp(tree->data, data_min) < 0) {
-        DLOG("Tree->data (%d) < data_min (%d)",
-                *((int *) tree->data),
-                *((int *) data_min));
+    if (tree_min && data_cmp(n->data, data_min) < 0) {
+        DLOG("Tree->data < data_min");
         exit(-1);
     }
-    if (tree_max && avl_data_cmp(tree->data, data_max) > 0) {
-        DLOG("Tree->data (%d) > data_min (%d)",
-                *((int *) tree->data),
-                *((int *) data_max));
+    if (tree_max && data_cmp(n->data, data_max) > 0) {
+        DLOG("Tree->data > data_min");
         exit(-2);
     }
 
     // Check avl left subtree.
-    if (tree->left != NULL) {
-        verif_avl(tree->left,
+    if (n->left != NULL) {
+        verif_avl(n->left,
                 tree_min,
                 1,
                 data_min,
-                tree->data);
-        hg = tree->left->height;
+                n->data,
+                data_cmp);
+        hg = n->left->height;
     } else {
         hg = 0;
     }
 
     // Check avl right subtree.
-    if (tree->right != NULL) {
-        verif_avl(tree->right,
+    if (n->right != NULL) {
+        verif_avl(n->right,
                 1,
                 tree_max,
-                tree->data,
-                data_max);
-        hd = tree->right->height;
+                n->data,
+                data_max,
+                data_cmp);
+        hd = n->right->height;
     } else {
         hd = 0;
     }
@@ -476,15 +478,15 @@ void verif_avl(node tree,
 
     // Check height consistency of each subtree
     if (hg <= hd) {
-        if (!(hd + 1 == tree->height && hg + 2 >= tree->height)) {
+        if (!(hd + 1 == n->height && hg + 2 >= n->height)) {
             DLOG("(hg<hd) Error in tree height: hd %u | hg %u | tree->height %u",
-                    hd, hg, tree->height);
+                    hd, hg, n->height);
             exit(-3);
         }
     } else {
-        if (!(hg + 1 == tree->height && hd + 2 >= tree->height)) {
+        if (!(hg + 1 == n->height && hd + 2 >= n->height)) {
             DLOG("(hg>hd) Error in tree height: hd %u | hg %u | tree->height %u",
-                    hd, hg, tree->height);
+                    hd, hg, n->height);
             exit(-4);
         }
     }
@@ -497,14 +499,17 @@ void verif_avl(node tree,
  *
  * \warning If you use this function you probably make a mistake.
  */
-void delete_tree_recur(node n)
+void delete_tree_recur(node n, void (*data_delete) (void *))
 {
-    if (n->left != NULL)
-        delete_tree_recur(n->left);
-    if (n->right != NULL)
-        delete_tree_recur(n->right);
+    if (n == NULL)
+        return;
 
-    avl_data_delete(n->data);
+    if (n->left != NULL)
+        delete_tree_recur(n->left, data_delete);
+    if (n->right != NULL)
+        delete_tree_recur(n->right, data_delete);
+
+    data_delete(n->data);
     free(n);
 }
 
@@ -515,24 +520,24 @@ void delete_tree_recur(node n)
  *
  * \warning If you use this function you probably make a mistake.
  */
-void print_tree_recur(node t)
+void print_tree_recur(node t, void (*data_print) (void *))
 {
     if (t == NULL)
         return;
 
     // recursively print left subtree.
-    print_tree_recur(t->left);
+    print_tree_recur(t->left, data_print);
     {
         // print current node with debug information.
         unsigned i = 0;
         for (i = 0; i < t->height; i++)
             printf("            ");
         printf("[%d|%p]", t->height, t);
-        avl_data_print(t->data);
+        data_print(t->data);
         printf("\n");
     }
     // recursively print right subtree.
-    print_tree_recur(t->right);
+    print_tree_recur(t->right, data_print);
 }
 
 /** \fn void explore_tree_recur(node t, void (*treatement)(void *, void *),
@@ -575,30 +580,35 @@ void explore_tree_recur(node t, void (*treatement)(void *, void *), void *param)
  */
 int explore_restrain_tree_recur(node t, int (*check)(void *, void *),
         void *param,
-        void *data_min, void *data_max)
+        void *data_min, void *data_max,
+        int (*data_cmp) (void *, void *))
 {
     if (t == NULL)
         return 0;
 
-    if (avl_data_cmp(t->data, data_max) > 0)
+    if (data_cmp(t->data, data_max) > 0)
         // current data is not in the asked range.
         return explore_restrain_tree_recur(t->left, check, param,
-                                            data_min, data_max);
-    else if (avl_data_cmp(t->data, data_min) < 0)
+                                            data_min, data_max,
+                                            data_cmp);
+    else if (data_cmp(t->data, data_min) < 0)
         // current data is not in the asked range.
         return explore_restrain_tree_recur(t->right, check, param,
-                                            data_min, data_max);
+                                            data_min, data_max,
+                                            data_cmp);
     else {
         // current data is in the range.
         int accu = 0;
         // treat recursively left subtree.
         accu += explore_restrain_tree_recur(t->left, check, param,
-                                            data_min, data_max);
+                                            data_min, data_max,
+                                            data_cmp);
         // treat current node.
         accu += check(t->data, param);
         // treat recursively right subtree.
         accu += explore_restrain_tree_recur(t->right, check, param,
-                                            data_min, data_max);
+                                            data_min, data_max,
+                                            data_cmp);
         return accu;
     }
 }
@@ -616,9 +626,9 @@ int explore_restrain_tree_recur(node t, int (*check)(void *, void *),
  *
  * \warning If you use this function, you probably make a mistake.
  */
-int get_data_recur(node n, void *data, size_t data_size)
+int get_data_recur(node n, void *data, size_t data_size, int (*data_cmp) (void *, void *))
 {
-    int cmp = avl_data_cmp(n->data, data);
+    int cmp = data_cmp(n->data, data);
 
     if (n == NULL)
         return 0;
@@ -629,12 +639,27 @@ int get_data_recur(node n, void *data, size_t data_size)
         return 1;
     } else if (cmp > 0) {
         // Need to go deep in the left subtree.
-        return get_data_recur(n->left, data, data_size);
+        return get_data_recur(n->left, data, data_size, data_cmp);
     } else {
         // Need to go deep in the right subtree.
-        return get_data_recur(n->right, data, data_size);
+        return get_data_recur(n->right, data, data_size, data_cmp);
     }
 
+}
+
+int stub__data_cmp(void *a, void *b)
+{
+    return (int) ((ptrdiff_t) a - (ptrdiff_t) b);
+}
+
+void stub__data_print(void *d)
+{
+    printf("0x%p", d);
+}
+
+void stub__data_delete(void *d)
+{
+    free(d);
 }
 
 /* ************************************************************************* *\
@@ -646,18 +671,25 @@ int get_data_recur(node n, void *data, size_t data_size)
  *
  * \return Pointer to new tree.
  *
+ * \param data_cmp Function to compare data.
+ * \param data_print Function to print data.
+ * \param data_delete Function to delete data.
+ *
  * This function return an initilized tree.
  */
-tree *init_dictionnary()
+tree *init_dictionnary(int (* data_cmp) (void *, void *),
+                       void (* data_print) (void *),
+                       void (* data_delete) (void *))
 {
-    DLOG("Create new tree");
-
     // New tree allocation
     tree *t = malloc(sizeof(tree));
 
     // Initialized field
     t->count = 0;
     t->root = NULL;
+    t->data_cmp = data_cmp ? data_cmp : stub__data_cmp;
+    t->data_print = data_print ? data_print : stub__data_print;
+    t->data_delete = data_delete ? data_delete : stub__data_delete;
 
     return t;
 }
@@ -669,7 +701,7 @@ tree *init_dictionnary()
  * \param t Pointer to tree.
  * \param data Pointer to data to add.
  */
-int insert_elmt(tree *t, void *data, size_t datasize)
+unsigned int insert_elmt(tree *t, void *data, size_t datasize)
 {
     node too_add = NULL;
     int present = 0;
@@ -686,7 +718,7 @@ int insert_elmt(tree *t, void *data, size_t datasize)
     too_add->left = too_add->right = NULL;
 
     // recursively insert data in tree.
-    present = insert_elmt_recur(&(t->root), too_add);
+    present = insert_elmt_recur(&(t->root), too_add, t->data_cmp);
 
     // increment counter of element if so.
     if (!present)
@@ -711,7 +743,7 @@ void verif_tree(tree *t)
         return;
 
     // recursively check of avl tree.
-    verif_avl(t->root, 0, 0, t->root->data, t->root->data);
+    verif_avl(t->root, 0, 0, t->root->data, t->root->data, t->data_cmp);
 }
 
 /** \fn void delete_tree(tree *t);
@@ -721,10 +753,10 @@ void verif_tree(tree *t)
  */
 void delete_tree(tree *t)
 {
-    if (t == NULL || t->root == NULL)
+    if (t == NULL)
         return;
 
-    delete_tree_recur(t->root);
+    delete_tree_recur(t->root, t->data_delete);
     free(t);
 }
 
@@ -742,7 +774,7 @@ void print_tree(tree *t)
         return;
 
     // recursively print the tree.
-    print_tree_recur(t->root);
+    print_tree_recur(t->root, t->data_print);
 }
 
 /** \fn void explore_tree(tree *t, void (*treatement)(void *, void *),
@@ -787,7 +819,9 @@ int explore_restrain_tree(tree *t, int (*check)(void *, void *), void *param,
         return 0;
 
     // recursively explore part of tree.
-    return explore_restrain_tree_recur(t->root, check, param, data_min, data_max);
+    return explore_restrain_tree_recur(t->root, check, param,
+                                       data_min, data_max,
+                                       t->data_cmp);
 }
 
 /** \fn int is_present(tree *t, void *d);
@@ -804,7 +838,7 @@ int is_present(tree *t, void *d)
         return 0;
 
     // Return result of a recursive exploration
-    return is_present_recur(t->root, d);
+    return is_present_recur(t->root, d, t->data_cmp);
 }
 
 /** \fn void delete_node_min(tree *t);
@@ -818,7 +852,7 @@ void delete_node_min(tree *t)
         return;
 
     // go recursively in tree to delete minimum node
-    if (delete_node_min_recur(&(t->root)))
+    if (delete_node_min_recur(&(t->root), t->data_delete))
         t->count--;
 }
 
@@ -835,7 +869,7 @@ void delete_node(tree *t, void *data)
     if (t->root == NULL)
         return;
     // explore tree recursively to delete node
-    if (delete_node_recur(&(t->root), data))
+    if (delete_node_recur(&(t->root), data, t->data_cmp, t->data_delete))
         t->count--;
 }
 
@@ -856,6 +890,6 @@ int get_data(tree *t, void *data, size_t data_size)
     if (t->root == NULL)
         return 0;
 
-    return get_data_recur(t->root, data, data_size);
+    return get_data_recur(t->root, data, data_size, t->data_cmp);
 }
 

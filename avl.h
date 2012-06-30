@@ -1,8 +1,9 @@
-/*   
- *   Libavl is a library to manage AVL structure to store and organize
- *   every kind of data. You just need to implement function to compare,
- *   to desallocate and print your structure.
- *   
+/*
+ *   Mymeco (or My Media Collector) is a software that give you all tools
+ *   to manage your video collection. This include fetching meta-information
+ *   of video like director, actors or synopsis directly from internet or
+ *   technical information like codec, resolution from video file itself.
+ *
  *   Copyright (C) 2011 Adrien Oliva
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -68,43 +69,6 @@
 #include "syslog.h"
 #include <stddef.h>
 
-/** \fn extern int avl_data_cmp(void *a, void *b)
- * \brief External function to compare data
- *
- * \param a Pointer to first element to compare
- * \param b Pointer to second element to compare
- *
- * \return 0 if a = b, positive if a > b and negative if a < b.
- *
- * \note \e You must implement this function. It is necessary for the library
- * to work and depends on your data you want to store.
- */
-extern int avl_data_cmp(void *a, void *b);
-
-/** \fn extern void avl_data_print(void *d)
- * \brief External function to print data.
- *
- * \param d Pointer to data to print.
- *
- * This function is usefull for debuging program.
- *
- * \note \e You must implement this function. It is necessary for the library
- * to work and depends on your data you want to store.
- */
-extern void avl_data_print(void *d);
-
-/** \fn extern void avl_data_delete(void *d)
- * \brief External function to delete data.
- *
- * \param d Pointer to data to delete.
- *
- * This function is usefull for when you want to delete data from tree to prevent
- * memory leak.
- *
- * \note \e You must implement this function. It is necessary for the library
- * to work and depends on your data you want to store.
- */
-extern void avl_data_delete(void *d);
 
 
 /** \struct _node
@@ -135,6 +99,39 @@ typedef struct _tree {
         unsigned count;
         /** Pointer to the first node of tree */
         node root;
+        /** \brief External function to compare data
+         *
+         * \param a Pointer to first element to compare
+         * \param b Pointer to second element to compare
+         *
+         * \return 0 if a = b, positive if a > b and negative if a < b.
+         *
+         * \note \e You must implement this function. It is necessary for the library
+         * to work and depends on your data you want to store.
+         */
+        int (* data_cmp) (void *, void *);
+        /** \brief External function to print data.
+         *
+         * \param d Pointer to data to print.
+         *
+         * This function is usefull for debuging program.
+         *
+         * \note \e You must implement this function. It is necessary for the library
+         * to work and depends on your data you want to store.
+         */
+        void (* data_print) (void *d);
+
+        /** \brief External function to delete data.
+         *
+         * \param d Pointer to data to delete.
+         *
+         * This function is usefull for when you want to delete data from tree to prevent
+         * memory leak.
+         *
+         * \note \e You must implement this function. It is necessary for the library
+         * to work and depends on your data you want to store.
+         */
+        void (* data_delete) (void *d);
 } tree;
 
 
@@ -148,9 +145,15 @@ typedef struct _tree {
  *
  * \return Pointer to new tree.
  *
+ * \param data_cmp Function to compare data.
+ * \param data_print Function to print data.
+ * \param data_delete Function to delete data.
+ *
  * This function return an initilized tree.
  */
-tree *init_dictionnary();
+tree *init_dictionnary(int (* data_cmp) (void *, void *),
+                       void (* data_print) (void *),
+                       void (* data_delete) (void *));
 
 /** \fn int insert_elmt(tree *t, void *data, size_t data_size);
  * \brief Insert new element in tree.
@@ -159,7 +162,7 @@ tree *init_dictionnary();
  * \param t Pointer to tree.
  * \param data Pointer to data to add.
  */
-int insert_elmt(tree *t, void *data, size_t datasize);
+unsigned int insert_elmt(tree *t, void *data, size_t datasize);
 
 /** \fn void verif_tree(tree *t);
  * \brief Deffensive check if tree is a real AVL tree.
