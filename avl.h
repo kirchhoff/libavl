@@ -1,8 +1,7 @@
 /*
- *   Mymeco (or My Media Collector) is a software that give you all tools
- *   to manage your video collection. This include fetching meta-information
- *   of video like director, actors or synopsis directly from internet or
- *   technical information like codec, resolution from video file itself.
+ *   Libavl is a library to manage AVL structure to store and organize
+ *   everykind of data. You just need to implement function to compare,
+ *   to desallocate and to print your structure.
  *
  *   Copyright (C) 2011 Adrien Oliva
  *
