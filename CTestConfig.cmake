@@ -2,8 +2,8 @@ set(CTEST_NIGHTLY_START_TIME "02:00:00 GMT+1")
 
 set(MODEL "Weekly")
 set(CTEST_PROJECT_NAME "LibAvl")
-set(CTEST_DROP_SITE "yapbreak.fr")
-set(CTEST_DROP_LOCATION "/CDash/submit.php?project=LibAvl")
+set(CTEST_DROP_SITE "cdash.yapbreak.fr")
+set(CTEST_DROP_LOCATION "/submit.php?project=libavl")
 set(CTEST_DROP_SITE_CDASH TRUE)
 
 set(MEMORYCHECK_COMMAND "/usr/bin/valgrind")
