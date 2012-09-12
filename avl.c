@@ -1,9 +1,4 @@
-/*   
- *   Mymeco (or My Media Collector) is a software that give you all tools
- *   to manage your video collection. This include fetching meta-information
- *   of video like director, actors or synopsis directly from internet or
- *   technical information like codec, resolution from video file itself.
- *   
+/*
  *   Copyright (C) 2011 Adrien Oliva
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -49,19 +44,6 @@
  *
  * \section Usage Use of library
  *
- * Library needs implementation of two function
- * \arg \c \b avl_data_cmp: this function is used to compared data stored in tree.
- * \arg \c \b avl_data_print: this function is used only for debug to print tree.
- * \arg \c \b avl_data_delete: this function is used to delete data stored in tree.
- *
- * To create a new tree, first use \c \b init_dictionnary function. It return
- * a pointer to a tree structure.
- *
- * To add element in tree, use \c \b insert_elmt with a pointer to data to add.
- *
- * To get data stored in the tree, use \c \b get_data with a pointer to data to
- * look for with only key data fill in the structure.
- *
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,12 +52,13 @@
 #include "avl.h"
 
 
-/** \fn int is_present_recur(node n, void *d);
+/** \fn int is_present_recur(node n, void *d, int (*data_cmp) (void *, void *));
  * \brief Recursive function to check if a given data is present in tree.
  *
  * \return 1 if data is present, 0 if not.
  * \param n Node of subtree to analyze.
  * \param d Pointer to data.
+ * \param data_cmp Function to compare two nodes.
  *
  * \warning If you use this function you probably make a mistake.
  */
@@ -125,10 +108,10 @@ unsigned int height_tree(node n)
     return n->height;
 }
 
-/** \fn void adjust_tree_height(node tree);
+/** \fn void adjust_tree_height(node n);
  * \brief Update height field of tree.
  *
- * \param tree Calculate new height of tree pointed by \c tree.
+ * \param n Calculate new height of tree pointed by \c tree.
  *
  * For the height calculation rules, see \c height_tree function.
  *
@@ -148,11 +131,11 @@ void adjust_tree_height(node n)
         n->height = h2 + 1;
 }
 
-/** \fn node rotate_tree_right(node tree);
- * \brief Proceed right rotation to tree pointed by \c tree.
+/** \fn node rotate_tree_right(node n);
+ * \brief Proceed right rotation to tree pointed by \c n.
  *
  * \return New root of right rotated tree.
- * \param tree Pointer to root of tree.
+ * \param n Pointer to root of tree.
  *
  * \warning If you use this function you probably make a mistake.
  */
@@ -166,11 +149,11 @@ node rotate_tree_right(node n)
     return temp;
 }
 
-/** \fn node rotate_tree_left(node tree);
- * \brief Proceed left rotation to tree pointed by \c tree.
+/** \fn node rotate_tree_left(node n);
+ * \brief Proceed left rotation to tree pointed by \c n.
  *
  * \return New root of left rotated tree.
- * \param tree Pointer to root of tree.
+ * \param n Pointer to root of tree.
  *
  * \warning If you use this function you probably make a mistake.
  */
@@ -185,7 +168,7 @@ node rotate_tree_left(node n)
 }
 
 
-/** \fn node equi_left(node tree);
+/** \fn node equi_left(node n);
  * \brief Balance left tree.
  *
  * \return New root of left-balanced tree.
