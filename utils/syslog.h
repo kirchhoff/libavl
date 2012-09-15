@@ -24,110 +24,96 @@
 #define __SYSLOG_H__
 
 #if LOGLEVEL != 0
-#   ifdef __cplusplus
-#       include <iostream>
-#   else
-#       include <stdio.h>
-#   endif
+#   include <iostream>
 #endif
 
+/** \def ELOG(fmt, args...)
+ * \brief Macro to log error.
+ *
+ * \param fmt Format of message logged.
+ * \param args Argument(s) needed by format message.
+ *
+ * If \c LOGLEVEL macro is set to a value higher than 0, the \c ELOG
+ * macro will be expanded to a message on \c stdout, with flag \c [E],
+ * the name of function and current line, and your message. The \c fmt
+ * and \c args... arguments use the \c printf format.
+ */
 #if LOGLEVEL > 0
-#   ifdef __cplusplus
-#       define ELOG(info) do {\
-                std::wcout << "[E] " << __func__ << ":" << __LINE__ << " ";\
-                std::wcout << info << std::endl;\
-        } while (0)
-#   else
-#       define ELOG(fmt, args...) printf("[E] %s:%u "fmt"\n", __func__,\
-                                                        __LINE__,\
-                                                        ##args)
-#   endif
+#   define ELOG(fmt, args...) printf("[E] %s:%u "fmt"\n", __func__,\
+                                                          __LINE__,\
+                                                          ##args)
 #else
-#       define ELOG(fmt, args...)
+#   define ELOG(fmt, args...)
 #endif
 
+/** \def WLOG(fmt, args...)
+ * \brief Macro to log warning.
+ *
+ * \param fmt Format of message logged.
+ * \param args Argument(s) needed by format message.
+ *
+ * If \c LOGLEVEL macro is set to a value higher than 1, the \c WLOG
+ * macro will be expanded to a message on \c stdout, with flag \c [W],
+ * the name of function and current line, and your message. The \c fmt
+ * and \c args... arguments use the \c printf format.
+ */
 #if LOGLEVEL > 1
-#   ifdef __cplusplus
-#       define WLOG(info) do {\
-                std::wcout << "[W] " << __func__ << ":" << __LINE__ << " ";\
-                std::wcout << info << std::endl;\
-        } while (0)
-#   else
-#       define WLOG(fmt, args...) printf("[W] %s:%u "fmt"\n", __func__,\
-                                                        __LINE__,\
-                                                        ##args)
-#   endif
+#   define WLOG(fmt, args...) printf("[W] %s:%u "fmt"\n", __func__,\
+                                                          __LINE__,\
+                                                          ##args)
 #else
-#       define WLOG(fmt, args...)
+#   define WLOG(fmt, args...)
 #endif
 
+/** \def ILOG(fmt, args...)
+ * \brief Macro to log information.
+ *
+ * \param fmt Format of message logged.
+ * \param args Argument(s) needed by format message.
+ *
+ * If \c LOGLEVEL macro is set to a value higher than 2, the \c ILOG
+ * macro will be expanded to a message on \c stdout, with flag \c [I],
+ * the name of function and current line, and your message. The \c fmt
+ * and \c args... arguments use the \c printf format.
+ */
 #if LOGLEVEL > 2
-#   ifdef __cplusplus
-#       define ILOG(info) do {\
-                std::wcout << "[I] " << __func__ << ":" << __LINE__ << " ";\
-                std::wcout << info << std::endl;\
-        } while (0)
-#   else
-#       define ILOG(fmt, args...) printf("[I] %s:%u "fmt"\n", __func__,\
-                                                        __LINE__,\
-                                                        ##args)
-#   endif
+#   define ILOG(fmt, args...) printf("[I] %s:%u "fmt"\n", __func__,\
+                                                          __LINE__,\
+                                                          ##args)
 #else
-#       define ILOG(fmt, args...)
+#   define ILOG(fmt, args...)
 #endif
 
+/** \def DLOG(fmt, args...)
+ * \brief Macro to log debug info.
+ *
+ * \param fmt Format of message logged.
+ * \param args Argument(s) needed by format message.
+ *
+ * If \c LOGLEVEL macro is set to a value higher than 3, the \c DLOG
+ * macro will be expanded to a message on \c stdout, with flag \c [D],
+ * the name of function and current line, and your message. The \c fmt
+ * and \c args... arguments use the \c printf format.
+ */
 #if LOGLEVEL > 3
-#   ifdef __cplusplus
-#       define DLOG(info) do {\
-                std::wcout << "[D] " << __func__ << ":" << __LINE__ << " ";\
-                std::wcout << info << std::endl;\
-        } while (0)
-#   else
-#       define DLOG(fmt, args...) printf("[D] %s:%u "fmt"\n", __func__,\
-                                                        __LINE__,\
-                                                        ##args)
-#   endif
+#   define DLOG(fmt, args...) printf("[D] %s:%u "fmt"\n", __func__,\
+                                                          __LINE__,\
+                                                          ##args)
 #else
-#       define DLOG(fmt, args...)
-#       define ENTER_FN
+#   define DLOG(fmt, args...)
 #endif
 
+/** \def ENTER_FN()
+ * \brief Macro to log start of function.
+ *
+ * If \c LOGLEVEL macro is set to a value higher than 4, the \c ENTER_FN
+ * macro will be expanded to a message on \c stdout, with flag \c [F],
+ * the name of function and current line.
+ */
 #if LOGLEVEL > 4
-#   ifdef __cplusplus
-#       define ENTER_FN() std::wcout << "[F] -> " << __func__ << ":" << __LINE__ << std::endl
-#   else
-#       define ENTER_FN() printf("[F] -----> %s (%u)\n", __func__, __LINE__)
-#   endif
+#   define ENTER_FN() printf("[F] -----> %s (%u)\n", __func__, __LINE__)
 #else
-#       define ENTER_FN()
+#   define ENTER_FN()
 #endif
-
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define MAX(a, b) (((a) < (b)) ? (b) : (a))
-
-typedef enum {
-        ok                  = 0,
-        not_available       ,
-        quit_unexpectedly   ,
-        not_implemented     ,
-        file_io             ,
-        mem_error           ,
-        already_present     ,
-        not_exist           ,
-        wrong_argument      ,
-        internal_error      ,
-} err_code;
-
-#ifndef __cplusplus
-typedef enum {
-        false   = 0,
-        true    = 1
-} bool;
-#endif
-
-#define   NO_ERROR      0x0000
-#define  LEX_ERROR      0x0001
-#define  SYN_ERROR      0x0002
-#define NULL_ERROR      0x8000
 
 #endif
