@@ -9,3 +9,15 @@ set(GLOBAL_PROJECT ON)
 add_subdirectory(libavl)
 
 enable_testing()
+
+
+# Add doxygen generator
+add_custom_target(doc doxygen ${CMAKE_HOME_DIRECTORY}/Doxyfile)
+
+# Add library build
+add_library(avl SHARED    ${CMAKE_HOME_DIRECTORY}/libavl/avl.c
+                          ${CMAKE_HOME_DIRECTORY}/libavl/avl.h
+                          ${CMAKE_HOME_DIRECTORY}/utils/syslog.h)
+add_library(stavl STATIC  ${CMAKE_HOME_DIRECTORY}/libavl/avl.c
+                          ${CMAKE_HOME_DIRECTORY}/libavl/avl.h
+                          ${CMAKE_HOME_DIRECTORY}/utils/syslog.h)

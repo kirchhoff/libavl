@@ -24,7 +24,7 @@
 #define __SYSLOG_H__
 
 #if LOGLEVEL != 0
-#   include <iostream>
+#   include <stdio.h>
 #endif
 
 /** \def ELOG(fmt, args...)
