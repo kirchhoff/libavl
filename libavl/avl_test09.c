@@ -54,7 +54,9 @@ int main(int argc, char *argv[])
     (void) argc;
     (void) argv;
 
-    srand(time(NULL));
+    unsigned long rand_seed = (unsigned long) time(NULL);
+    ILOG("Random seed: %lu", rand_seed);
+    srand(rand_seed);
 
     for (i = 0; i < MAX_ELEMENT; i++) {
         data[i].key = rand();

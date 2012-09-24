@@ -60,7 +60,9 @@ int main(int argc, char *argv[])
     (void) argc;
     (void) argv;
 
-    srand(time(NULL));
+    unsigned long rand_seed = (unsigned long) time(NULL);
+    ILOG("Random seed: %lu", rand_seed);
+    srand(rand_seed);
 
     node_min.key = rand();
     node_max.key = 0;
