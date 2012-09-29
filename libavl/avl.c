@@ -44,12 +44,147 @@
  *
  * \section Usage Use of library
  *
+ * Here is an example of code that store structure in AVL tree:
+ *
+ * <pre>
+ *  #include <stdlib.h>
+ *  #include <stdio.h>
+ *  #include "avl.h"
+ *
+ *  // Structure we want to store
+ *  // key is used to order data
+ *  struct data {
+ *      int key;
+ *       int value;
+ *   };
+ *
+ *   // Function that compares two struct data
+ *   int data_cmp(void *a, void *b)
+ *   {
+ *       struct data *aa = (struct data *) a;
+ *       struct data *bb = (struct data *) b;
+ *
+ *       // Protect against NULL pointer
+ *       // It could generally never happened
+ *       if (!aa || !bb)
+ *           return 0;
+ *
+ *       return aa->key - bb->key;
+ *   }
+ *
+ *   // Function that dumps data structure
+ *   void data_print(void *d)
+ *   {
+ *       struct data *dd = (struct data *) d;
+ *
+ *       if (dd)
+ *           printf("{ %d => %d }\n", dd->key, dd->value);
+ *   }
+ *
+ *   // Function that delete a data structure
+ *   void data_delete(void *d)
+ *   {
+ *       struct data *dd = (struct data *) d;
+ *
+ *       if (dd) {
+ *           // You can put here all additional needed
+ *           // memory deallocation
+ *           free(dd);
+ *       }
+ *   }
+ *
+ *   int main(int argc, char *argv)
+ *   {
+ *       tree *avl_tree = NULL;
+ *       struct data tmp;
+ *       int result;
+ *
+ *       // Initialize a new tree with our three previously defined
+ *       // functions to store data structure.
+ *       avl_tree = init_dictionnary(data_cmp, data_print, data_delete);
+ *
+ *       tmp.key = 42;
+ *       tmp.value = 4242;
+ *
+ *       // Add element {42, 4242} in our tree.
+ *       result = insert_elmt(avl_tree, &tmp, sizeof(struct data));
+ *       // Here result is equal to 1 since there is only 1 element in tree.
+ *
+ *       // Dump tree to stdout with data_print function
+ *       print_tree(avl_tree);
+ *
+ *       // For all search function, the only value needed in tmp structure
+ *       // is key field.
+ *       tmp.key = 20;
+ *       tmp.value = 0;
+ *
+ *       if (!is_present(avl_tree, &tmp))
+ *           printf("Key 20 is not found.\n");
+ *
+ *       tmp.key = 42;
+ *       if (is_present(avl_tree, &tmp))
+ *           printf("Key 42 exist in tree.\n");
+ *
+ *       if (get_data(avl_tree, &tmp, sizeof(struct data)))
+ *           printf("Now, tmp.key is equal to 4242\n");
+ *
+ *       delete_node(avl_tree, &tmp);
+ *       if (!is_present(avl_tree, &tmp))
+ *           printf("Key 42 does not exist anymore.\n");
+ *
+ *       // Free all memory
+ *       delete_tree(avl_tree);
+ *
+ *       return 0;
+ *   }
+ *   </pre>
+ *
+ * You can find this example in folder \b example.
+ *
+ * \subsection Tree initialisation
+ *
+ * To start a new tree, you need to init a new one with function
+ * \b init_tree.
+ *
+ * \subsection Manage data
+ *
+ * The libavl provide all necessary function to store, retrieve and
+ * browse your data. The following set gives basic operation:
+ *  * \b insert_elmt
+ *  * \b is_present
+ *  * \b get_data
+ *  * \b delete_node
+ *  * \b delete_node_min
+ *
+ * Moreover, libavl gives the availability to browse your entire data
+ * or a subset of your data with:
+ *  * \b explore_tree
+ *  * \b explore_restrain_tree
+ *  * \b print_tree
+ *
+ * Finally, libavl take care of your memory and deallocate all memory
+ * used in a tree when you want to destroy it with \b delete_tree.
+ *
  */
+#ifndef LOGLEVEL
+#   define LOGLEVEL 0
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "avl.h"
+#include "syslog.h"
+
+/** Library version
+ */
+#define LIBAVL_MAJOR_VERSION    1
+#define LIBAVL_MINOR_VERSION    0
+#define LIBAVL_REVISION         0
+#define LIBAVL_VERSION          "1.0.0"
+#define LIBAVL_VERSION_CHECK(maj, min) (   ((maj) == LIBAVL_MAJOR_VERSION)\
+                                        && ((min) == LIBAVL_MINOR_VERSION))
 
 
 /** \fn int is_present_recur(node n, void *d, int (*data_cmp) (void *, void *));

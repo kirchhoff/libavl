@@ -56,4 +56,6 @@ endif(${DEBUG})
 
 if (${COVERAGE})
     add_definitions(-fprofile-arcs -ftest-coverage)
+    set (CMAKE_EXE_LINKER_FLAGS "-fprofile-arcs -lgcov")
 endif(${COVERAGE})
+
