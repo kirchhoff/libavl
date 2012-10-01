@@ -239,6 +239,16 @@ typedef struct _tree {
          * to work and depends on your data you want to store.
          */
         void (* data_delete) (void *d);
+
+        /** \brief External function to copy data.
+         *
+         * \param d Pointer to data to copy.
+         * \return New data allocation with all its fields filled.
+         *
+         * \note \e You must implement this function. It is necessary for the library
+         * to work and depends on your data you want to store.
+         */
+        void (* data_copy) (void *, void *);
 } tree;
 
 
@@ -249,7 +259,8 @@ typedef struct _tree {
 
 /** \fn tree *init_dictionnary(int (*data_cmp)(void *, void *),
  *                             void (*data_print)(void *),
- *                             void (*data_delete)(void *));
+ *                             void (*data_delete)(void *),
+ *                             void (*data_copy)(void *, void *));
  * \brief Initialize dictionnary.
  *
  * \return Pointer to new tree.
@@ -257,6 +268,7 @@ typedef struct _tree {
  * \param data_cmp Function to compare data.
  * \param data_print Function to print data.
  * \param data_delete Function to delete data.
+ * \param data_copy Function to copy data.
  *
  * This function return an initilized tree.
  *
@@ -288,10 +300,13 @@ typedef struct _tree {
  *      structure or a simple type, this function is enough. But for bigger
  *      object like a string array, it is necessary to provide a new
  *      \c data_delete function to avoid memory leak.
+ *    - Copy function: by default, the internal \c data_copy function will
+ *      memcpy data.
  */
 tree *init_dictionnary(int (*data_cmp)(void *, void *),
                        void (*data_print)(void *),
-                       void (*data_delete)(void *));
+                       void (*data_delete)(void *),
+                       void (*data_copy)(void *, void *));
 
 /** \fn int insert_elmt(tree *t, void *data, size_t datasize);
  * \brief Insert new element in tree.

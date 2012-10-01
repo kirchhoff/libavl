@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
     print_tree(first);
 
     // Try to allocate a new tree.
-    first = init_dictionnary(data_cmp, data_print, data_delete);
+    first = init_dictionnary(data_cmp, data_print, data_delete, NULL);
     if (first == NULL) {
         ELOG("Init dictionnary error");
         return EXIT_FAILURE;

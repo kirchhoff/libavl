@@ -222,7 +222,9 @@ int is_present_recur(node n, void *d, int (*data_cmp) (void *, void *))
 }
 
 /** Use for debug only. Print recursive level of inserted element */
+#if LOGLEVEL > 3
 static int level_insert = 0;
+#endif
 
 /** \fn int height_tree(node tree);
  * \brief Give the height of tree.
@@ -817,7 +819,7 @@ void stub__data_print(void *d)
  *
  * This fonction call \c free on \c d.
  *
- * \warning This function is just a stup. If your data is more
+ * \warning This function is just a stub. If your data is more
  * complicated than a single static structure, you must provide
  * your \c data_delete implementation. If not your program will
  * cause memory leaks on tree deletion.
@@ -827,13 +829,31 @@ void stub__data_delete(void *d)
     free(d);
 }
 
+/** \fn void stub__data_copy(void *src, void *dst)
+ * \brief Stub function used if no data_copy function is provided.
+ *
+ * \param src Data source
+ * \param dst Data destination
+ *
+ * This function call \c memcpy to copy \c src into \c dst.
+ *
+ * \warning This function is just a stub. If your data is more complicated
+ * than a single static structure, you must provide your \c data_copy
+ * implementation.
+ */
+void stub__data_copy(void *src, void *dst)
+{
+    memcpy(dst, src, sizeof(src));
+}
+
 /* ************************************************************************* *\
 |*                      EXTERNAL FUNCTION                                    *|
 \* ************************************************************************* */
 
-/* \fn tree *init_dictionnary(int (*data_cmp)(void *, void *),
- *                            void (*data_print)(void *),
- *                            void (*data_delete)(void *));
+/** \fn tree *init_dictionnary(int (*data_cmp)(void *, void *),
+ *                             void (*data_print)(void *),
+ *                             void (*data_delete)(void *),
+ *                             void *(*data_copy)(void *));
  * \brief Initialize dictionnary.
  *
  * \return Pointer to new tree.
@@ -841,6 +861,7 @@ void stub__data_delete(void *d)
  * \param data_cmp Function to compare data.
  * \param data_print Function to print data.
  * \param data_delete Function to delete data.
+ * \param data_copy Function to copy data.
  *
  * This function return an initilized tree.
  *
@@ -872,10 +893,13 @@ void stub__data_delete(void *d)
  *      structure or a simple type, this function is enough. But for bigger
  *      object like a string array, it is necessary to provide a new
  *      \c data_delete function to avoid memory leak.
+ *    - Copy function: by default, the internal \c data_copy function will
+ *      memcpy data.
  */
-tree *init_dictionnary(int (* data_cmp) (void *, void *),
-                       void (* data_print) (void *),
-                       void (* data_delete) (void *))
+tree *init_dictionnary(int (*data_cmp)(void *, void *),
+                       void (*data_print)(void *),
+                       void (*data_delete)(void *),
+                       void (*data_copy)(void *, void *))
 {
     // New tree allocation
     tree *t = malloc(sizeof(tree));
@@ -886,6 +910,7 @@ tree *init_dictionnary(int (* data_cmp) (void *, void *),
     t->data_cmp = data_cmp ? data_cmp : stub__data_cmp;
     t->data_print = data_print ? data_print : stub__data_print;
     t->data_delete = data_delete ? data_delete : stub__data_delete;
+    t->data_copy = data_copy ? data_copy : stub__data_copy;
 
     return t;
 }
@@ -903,7 +928,7 @@ tree *init_dictionnary(int (* data_cmp) (void *, void *),
  */
 unsigned int insert_elmt(tree *t, void *data, size_t datasize)
 {
-    node too_add = NULL;
+    node to_add = NULL;
     int present = 0;
 
     // check if data is already present
@@ -911,14 +936,14 @@ unsigned int insert_elmt(tree *t, void *data, size_t datasize)
         return t->count;
 
     // Allocate memory for the new data and copy data.
-    too_add = malloc(sizeof(struct _node));
-    too_add->data = malloc(datasize);
-    memcpy(too_add->data, data, datasize);
-    too_add->height = 0;
-    too_add->left = too_add->right = NULL;
+    to_add = malloc(sizeof(struct _node));
+    to_add->data = malloc(datasize);
+    t->data_copy(data, to_add->data);
+    to_add->height = 0;
+    to_add->left = to_add->right = NULL;
 
     // recursively insert data in tree.
-    present = insert_elmt_recur(&(t->root), too_add, t->data_cmp);
+    present = insert_elmt_recur(&(t->root), to_add, t->data_cmp);
 
     // increment counter of element if so.
     if (!present)

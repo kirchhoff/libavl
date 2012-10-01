@@ -29,6 +29,11 @@ void data_delete(void *d)
     free(d);
 }
 
+void data_copy(void *src, void *dst)
+{
+    memcpy(dst, src, sizeof(struct _tree_data));
+}
+
 #define MAX_ELEMENT 10000
 
 void count_treat(void *n, void *param)
@@ -50,7 +55,6 @@ int main(int argc, char *argv[])
     int i = 0;
     unsigned int r = 0;
 
-
     (void) argc;
     (void) argv;
 
@@ -71,7 +75,7 @@ int main(int argc, char *argv[])
     }
 
     // Try to allocate a new tree.
-    first = init_dictionnary(data_cmp, data_print, data_delete);
+    first = init_dictionnary(data_cmp, data_print, data_delete, data_copy);
     if (first == NULL) {
         ELOG("Init dictionnary error");
         return EXIT_FAILURE;
@@ -101,7 +105,7 @@ int main(int argc, char *argv[])
 
     explore_tree(first, count_treat, &r);
     if (r != element_in_tree) {
-        ELOG("Wrong result on empty tree");
+        ELOG("Wrong result on empty tree: %d != %d", r, element_in_tree);
         return EXIT_FAILURE;
     }
 
