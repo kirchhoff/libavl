@@ -6,91 +6,101 @@
 // key is used to order data
 struct data {
     int key;
-     int value;
- };
+    int value;
+};
 
- // Function that compares two struct data
- int data_cmp(void *a, void *b)
- {
-     struct data *aa = (struct data *) a;
-     struct data *bb = (struct data *) b;
+// Function that compares two struct data
+int data_cmp(void *a, void *b)
+{
+    struct data *aa = (struct data *) a;
+    struct data *bb = (struct data *) b;
 
-     // Protect against NULL pointer
-     // It could generally never happened
-     if (!aa || !bb)
-         return 0;
+    // Protect against NULL pointer
+    // It could generally never happened
+    if (!aa || !bb)
+        return 0;
 
-     return aa->key - bb->key;
- }
+    return aa->key - bb->key;
+}
 
- // Function that dumps data structure
- void data_print(void *d)
- {
-     struct data *dd = (struct data *) d;
+// Function that dumps data structure
+void data_print(void *d)
+{
+    struct data *dd = (struct data *) d;
 
-     if (dd)
-         printf("{ %d => %d }\n", dd->key, dd->value);
- }
+    if (dd)
+        printf("{ %d => %d }\n", dd->key, dd->value);
+}
 
- // Function that delete a data structure
- void data_delete(void *d)
- {
-     struct data *dd = (struct data *) d;
+// Function that delete a data structure
+void data_delete(void *d)
+{
+    struct data *dd = (struct data *) d;
 
-     if (dd) {
-         // You can put here all additional needed
-         // memory deallocation
-         free(dd);
-     }
- }
+    if (dd) {
+        // You can put here all additional needed
+        // memory deallocation
+        free(dd);
+    }
+}
 
- int main(int argc, char **argv)
- {
-     tree *avl_tree = NULL;
-     struct data tmp;
-     unsigned result;
+// Function that copy data structure
+void data_copy(void *src, void *dst)
+{
+    struct data *s = (struct data *) src;
+    struct data *d = (struct data *) dst;
 
-     (void) argc;
-     (void) argv;
+    d->key = s->key;
+    d->value = s->value;
+}
 
-     // Initialize a new tree with our three previously defined
-     // functions to store data structure.
-     avl_tree = init_dictionnary(data_cmp, data_print, data_delete);
+int main(int argc, char **argv)
+{
+    tree *avl_tree = NULL;
+    struct data tmp;
+    unsigned result;
 
-     tmp.key = 42;
-     tmp.value = 4242;
+    (void) argc;
+    (void) argv;
 
-     // Add element {42, 4242} in our tree.
-     result = insert_elmt(avl_tree, &tmp, sizeof(struct data));
-     // Here result is equal to 1 since there is only 1 element in tree.
-     printf("Result after first insert: %d\n", result);
+    // Initialize a new tree with our three previously defined
+    // functions to store data structure.
+    avl_tree = init_dictionnary(data_cmp, data_print, data_delete, data_copy);
 
-     // Dump tree to stdout with data_print function
-     print_tree(avl_tree);
+    tmp.key = 42;
+    tmp.value = 4242;
 
-     // For all search function, the only value needed in tmp structure
-     // is key field.
-     tmp.key = 20;
-     tmp.value = 0;
+    // Add element {42, 4242} in our tree.
+    result = insert_elmt(avl_tree, &tmp, sizeof(struct data));
+    // Here result is equal to 1 since there is only 1 element in tree.
+    printf("Result after first insert: %d\n", result);
 
-     if (!is_present(avl_tree, &tmp))
-         printf("Key 20 is not found.\n");
+    // Dump tree to stdout with data_print function
+    print_tree(avl_tree);
 
-     tmp.key = 42;
-     if (is_present(avl_tree, &tmp))
-         printf("Key 42 exist in tree.\n");
+    // For all search function, the only value needed in tmp structure
+    // is key field.
+    tmp.key = 20;
+    tmp.value = 0;
 
-     if (get_data(avl_tree, &tmp, sizeof(struct data)))
-         printf("Now, tmp.key is equal to 4242\n");
+    if (!is_present(avl_tree, &tmp))
+        printf("Key 20 is not found.\n");
 
-     delete_node(avl_tree, &tmp);
-     if (!is_present(avl_tree, &tmp))
-         printf("Key 42 does not exist anymore.\n");
+    tmp.key = 42;
+    if (is_present(avl_tree, &tmp))
+        printf("Key 42 exist in tree.\n");
 
-     // Free all memory
-     delete_tree(avl_tree);
+    if (get_data(avl_tree, &tmp, sizeof(struct data)))
+        printf("Now, tmp.key is equal to 4242\n");
 
-     return 0;
- }
+    delete_node(avl_tree, &tmp);
+    if (!is_present(avl_tree, &tmp))
+        printf("Key 42 does not exist anymore.\n");
+
+    // Free all memory
+    delete_tree(avl_tree);
+
+    return 0;
+}
 
 
