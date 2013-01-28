@@ -763,11 +763,12 @@ int explore_restrain_tree_recur(node t, int (*check)(void *, void *),
  */
 int get_data_recur(node n, void *data, size_t data_size, int (*data_cmp) (void *, void *))
 {
-    int cmp = data_cmp(n->data, data);
+    int cmp = 0;
 
     if (n == NULL)
         return 0;
 
+    cmp = data_cmp(n->data, data);
     if (cmp == 0) {
         // Current node is the good node, copy it.
         memcpy(data, n->data, data_size);
@@ -946,10 +947,13 @@ unsigned int insert_elmt(tree *t, void *data, size_t datasize)
     present = insert_elmt_recur(&(t->root), to_add, t->data_cmp);
 
     // increment counter of element if so.
-    if (!present)
+    if (!present) {
+        DLOG("New data was added.");
         return ++t->count;
-    else
+    } else {
+        DLOG("Data was updated.");
         return t->count;
+    }
 }
 
 
