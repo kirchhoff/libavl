@@ -58,6 +58,7 @@ int main(int argc, char *argv[])
     unsigned int result;
     unsigned int element_in_tree = 0;
     int i = 0;
+    int j = 0;
     unsigned int r = 0;
     int return_value = 0;
     int count = 0;
@@ -66,7 +67,7 @@ int main(int argc, char *argv[])
     (void) argc;
     (void) argv;
 
-    unsigned long rand_seed = (unsigned long) time(NULL);
+    unsigned long rand_seed = (unsigned long) 134852136; //time(NULL);
     ILOG("Random seed: %lu", rand_seed);
     srand(rand_seed);
 
@@ -80,8 +81,16 @@ int main(int argc, char *argv[])
         data[i].value = 1;
         if (    (data[i].key < node_max.key)
             &&  (data[i].key > node_min.key)
-           )
+           ) {
             count++;
+            for (j = 0; j < i; j++) {
+                if (data[i].key == data[j].key) {
+                    count--;
+                    break;
+                }
+            }
+        }
+
     }
 
     // explore tree on a NULL tree
