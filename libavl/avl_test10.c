@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
     (void) argc;
     (void) argv;
 
-    unsigned long rand_seed = (unsigned long) 134852136; //time(NULL);
+    unsigned long rand_seed = (unsigned long) time(NULL);
     ILOG("Random seed: %lu", rand_seed);
     srand(rand_seed);
 
