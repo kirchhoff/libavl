@@ -1,18 +1,21 @@
 /*
- *   Copyright (C) 2011 Adrien Oliva
+ *   Libavl is a library to manage AVL structure to store and organize
+ *   everykind of data. You just need to implement function to compare,
+ *   to desallocate and to print your structure.
  *
- *   This program is free software: you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation, either version 3 of the License, or
- *   (at your option) any later version.
+ *       DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE 
+ *                   Version 2, December 2004 
  *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ *   Copyright (C) 2013 Adrien Oliva <adrien.oliva@yapbreak.fr>
  *
- *   You should have received a copy of the GNU General Public License
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *   Everyone is permitted to copy and distribute verbatim or modified 
+ *   copies of this license document, and changing it is allowed as long 
+ *   as the name is changed. 
+ *
+ *           DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE 
+ *   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION 
+ *
+ *   0. You just DO WHAT THE FUCK YOU WANT TO.
  */
 
 /**
