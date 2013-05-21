@@ -20,77 +20,46 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
-#include "syslog.h"
-#include "avl.h"
+#include "../syslog.h"
+#include "../avl.h"
 
 int data_cmp(void *a, void *b)
 {
-    int aa = *((int *) a);
-    int bb = *((int *) b);
-
-    return aa - bb;
+    return (int) ((char *) a - (char *) b);
 }
 
 void data_print(void *d)
 {
-    printf("%p|%d", d, *((int *) d));
+    printf("%p", d);
 }
 
 void data_delete(void *d)
 {
-    free(d);
+    (void) d;
 }
 
-void data_copy(void *src, void *dst)
-{
-    *((int *) dst) = *((int *) src);
-}
-
-int main(int argc, char *argv[])
+char *alloc_tests()
 {
     tree *first = NULL;
-    int data;
-    unsigned int result;
 
-    (void) argc;
-    (void) argv;
-
-    unsigned long rand_seed = (unsigned long) time(NULL);
-    ILOG("Random seed: %lu", rand_seed);
-    srand(rand_seed);
     // Try to allocate a new tree.
-    first = init_dictionnary(data_cmp, data_print, data_delete, data_copy);
+    first = init_dictionnary(data_cmp, data_print, data_delete, NULL);
     if (first == NULL) {
         ELOG("Init dictionnary error");
-        return EXIT_FAILURE;
+        return "Init dictionnary error";
     }
     if (sizeof(*first) != sizeof(tree)) {
         ELOG("Wrong returned size");
-        return EXIT_FAILURE;
+        return "Wrong returned size";
     }
-
-    data = rand();
-
-    // Insert one element
-    result = insert_elmt(first, &data, sizeof(int));
-    if (result != 1) {
-        ELOG("Wrong result of insert element");
-        return EXIT_FAILURE;
-    }
-
-    // Check if element is in tree
-    if (!is_present(first, &data)) {
-        ELOG("Data not found in tree");
-        return EXIT_FAILURE;
-    }
-
 
     // Try to delete it
     delete_tree(first);
 
+    // Try to delete a null tree
+    delete_tree(NULL);
 
 
-    return EXIT_SUCCESS;
+    return NULL;
 }

@@ -22,10 +22,10 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "syslog.h"
-#include "avl.h"
+#include "../syslog.h"
+#include "../avl.h"
 
-int data_cmp(void *a, void *b)
+static int data_cmp(void *a, void *b)
 {
     int aa = *((int *) a);
     int bb = *((int *) b);
@@ -33,70 +33,59 @@ int data_cmp(void *a, void *b)
     return aa - bb;
 }
 
-void data_print(void *d)
+static void data_print(void *d)
 {
     printf("%p|%d", d, *((int *) d));
 }
 
-void data_delete(void *d)
+static void data_delete(void *d)
 {
     free(d);
 }
 
-#define MAX_ELEMENT 10000
-
-int main(int argc, char *argv[])
+char *lookup_tests()
 {
     tree *first = NULL;
-    int data[MAX_ELEMENT];
+    int data;
     unsigned int result;
-    unsigned int element_in_tree = 0;
-    int i = 0;
-
-    (void) argc;
-    (void) argv;
 
     unsigned long rand_seed = (unsigned long) time(NULL);
     ILOG("Random seed: %lu", rand_seed);
     srand(rand_seed);
-
-    for (i = 0; i < MAX_ELEMENT; i++) {
-        data[i] = rand();
-    }
-
-
     // Try to allocate a new tree.
     first = init_dictionnary(data_cmp, data_print, data_delete, NULL);
     if (first == NULL) {
         ELOG("Init dictionnary error");
-        return EXIT_FAILURE;
+        return "Init dictionnary error";
+    }
+    if (sizeof(*first) != sizeof(tree)) {
+        ELOG("Wrong returned size");
+        return "Wrong returned size";
     }
 
-    verif_tree(first);
-    for (i = 0; i < MAX_ELEMENT; i++) {
-        if (!is_present(first, &(data[i]))) {
-            element_in_tree++;
-        }
-        result = insert_elmt(first, &(data[i]), sizeof(int));
-        if (result != element_in_tree) {
-            ELOG("Wrong result of inserted element");
-            return EXIT_FAILURE;
-        }
-        verif_tree(first);
+    data = rand();
+
+    // Insert one element
+    result = insert_elmt(first, &data, sizeof(int));
+    if (result != 1) {
+        ELOG("Wrong result of insert element");
+        return "Wrong result of insert element";
     }
 
-    // Try to add existing data
-    for (i = 0; i < MAX_ELEMENT; i++) {
-        if (!is_present(first, &(data[i]))) {
-            ELOG("Element is not present, it said! F**k");
-            return EXIT_FAILURE;
-        }
-        result = insert_elmt(first, &(data[i]), sizeof(int));
-        if (result != element_in_tree) {
-            ELOG("Wrong result of inserted element");
-            return EXIT_FAILURE;
-        }
-        verif_tree(first);
+    // Check if element is in tree
+    if (!is_present(first, &data)) {
+        ELOG("Data not found in tree");
+        return "Data not found in tree";
+    }
+
+    // Insert element already installed
+    result = insert_elmt(first, &data, sizeof(int));
+
+    // Check if random element is present
+    data++;
+    if (is_present(first, &data)) {
+        ELOG("Unknown Data found");
+        return "Unknown data found";
     }
 
 
@@ -105,5 +94,5 @@ int main(int argc, char *argv[])
 
 
 
-    return EXIT_SUCCESS;
+    return NULL;
 }

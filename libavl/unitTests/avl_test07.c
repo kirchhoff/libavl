@@ -22,15 +22,15 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "syslog.h"
-#include "avl.h"
+#include "../syslog.h"
+#include "../avl.h"
 
 struct _tree_data {
     int key;
     int value;
 };
 
-int data_cmp(void *a, void *b)
+static int data_cmp(void *a, void *b)
 {
     struct _tree_data aa = *((struct _tree_data *) a);
     struct _tree_data bb = *((struct _tree_data *) b);
@@ -38,31 +38,29 @@ int data_cmp(void *a, void *b)
     return aa.key - bb.key;
 }
 
-void data_print(void *d)
+static void data_print(void *d)
 {
     printf("%p|%d-%d", d,
             ((struct _tree_data *) d)->key, ((struct _tree_data *) d)->value);
 }
 
-void data_delete(void *d)
+static void data_delete(void *d)
 {
     free(d);
 }
 
 #define MAX_ELEMENT 10000
 
-int main(int argc, char *argv[])
+char *get_data_tests()
 {
     tree *first = NULL;
     struct _tree_data data[MAX_ELEMENT];
-    struct _tree_data look_for_data;
+    struct _tree_data tmp_elmnt;
+    struct _tree_data current_min;
     unsigned int result;
-    int bool_result;
     unsigned int element_in_tree = 0;
     int i = 0;
-
-    (void) argc;
-    (void) argv;
+    int j = 0;
 
     unsigned long rand_seed = (unsigned long) time(NULL);
     ILOG("Random seed: %lu", rand_seed);
@@ -76,69 +74,64 @@ int main(int argc, char *argv[])
 
     verif_tree(first);
 
-    // Get data on non existing tree
-    for (i = MAX_ELEMENT - 1; i >= 0; i--) {
-        look_for_data.key = data[i].key;
-        bool_result = get_data(first, &(look_for_data), sizeof(struct _tree_data));
-        if (bool_result) {
-            ELOG("Data found");
-            return EXIT_FAILURE;
-        }
-    }
-
     // Try to allocate a new tree.
     first = init_dictionnary(data_cmp, data_print, data_delete, NULL);
     if (first == NULL) {
         ELOG("Init dictionnary error");
-        return EXIT_FAILURE;
-    }
-
-    // Get data on empty tree
-    for (i = MAX_ELEMENT - 1; i >= 0; i--) {
-        look_for_data.key = data[i].key;
-        bool_result = get_data(first, &(look_for_data), sizeof(struct _tree_data));
-        if (bool_result) {
-            ELOG("Data found");
-            return EXIT_FAILURE;
-        }
+        return "Init dictionnary error";
     }
 
     // Add data
     verif_tree(first);
     for (i = 0; i < MAX_ELEMENT; i++) {
-        look_for_data.key = data[i].key;
-        if (!is_present(first, &(look_for_data))) {
+        tmp_elmnt.key = data[i].key;
+        if (!is_present(first, &(tmp_elmnt))) {
             element_in_tree++;
         }
         result = insert_elmt(first, &(data[i]), sizeof(struct _tree_data));
         if (result != element_in_tree) {
             ELOG("Wrong result of inserted element");
-            return EXIT_FAILURE;
+            return "Wrong result of inserted element";
         }
         verif_tree(first);
     }
 
-    // Get data
-    for (i = MAX_ELEMENT - 1; i >= 0; i--) {
-        look_for_data.key = data[i].key;
-        bool_result = get_data(first, &(look_for_data), sizeof(struct _tree_data));
-        if (!bool_result) {
-            ELOG("Data not found");
-            return EXIT_FAILURE;
+    current_min.key     = (int) 0x80000000;
+    current_min.value   = (int) 0x80000000;
+
+    for (i = 0; i < MAX_ELEMENT && element_in_tree != 0; i++) {
+        tmp_elmnt.key       = (int) 0x7fffffff;
+        tmp_elmnt.value     = (int) 0x7fffffff;
+        // Get minimum data
+        for (j = 0; j < MAX_ELEMENT; j++) {
+            if (    data[j].key < tmp_elmnt.key
+                &&  data[j].key > current_min.key) {
+                tmp_elmnt.key   = data[j].key;
+                tmp_elmnt.value = data[j].value;
+            }
+
         }
-        if (        look_for_data.key != data[i].key
-                &&  look_for_data.value != data[i].value) {
-            ELOG("Not the good data retrieve.");
-            return EXIT_FAILURE;
+
+        current_min.key     = tmp_elmnt.key;
+        current_min.value   = tmp_elmnt.value;
+
+        if (!is_present(first, &tmp_elmnt)) {
+            ELOG("Minimum data not in tree");
+            return "Minimum data not in tree";
         }
+        delete_node_min(first);
+        if (is_present(first, &tmp_elmnt)) {
+            ELOG("Minimum element deleted");
+            return "Minimum element deleted";
+        }
+        element_in_tree--;
         verif_tree(first);
     }
-
 
     // Try to delete it
     delete_tree(first);
 
 
 
-    return EXIT_SUCCESS;
+    return NULL;
 }

@@ -1,3 +1,10 @@
+#  ======================================================================================
+#  File         : Makefile
+#  Author       : Adrien Oliva
+#  Last Change  : 01/02/2013 | 10:16:07 AM | Wednesday,January
+#  Description  : Build script for LibAvl library
+#  ======================================================================================
+
 #       DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE 
 #                   Version 2, December 2004 
 #
@@ -11,15 +18,15 @@
 #  TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION 
 #
 # 0. You just DO WHAT THE FUCK YOU WANT TO.
-set(CTEST_NIGHTLY_START_TIME "02:00:00 GMT+1")
 
-set(MODEL "Weekly")
-set(CTEST_PROJECT_NAME "LibAvl")
-set(CTEST_DROP_SITE "cdash.yapbreak.fr")
-set(CTEST_DROP_LOCATION "/submit.php?project=libavl")
-set(CTEST_DROP_SITE_CDASH TRUE)
+TARGET	= libavl.so
 
-set(MEMORYCHECK_COMMAND "/usr/bin/valgrind")
-set(MEMORYCHECK_COMMAND_OPTIONS "-q --trace-children=yes --smc-check=all --read-var-info=yes --leak-check=full --show-reachable=yes --track-origins=yes --malloc-fill=ff --free-fill=42")
+include Makefile.global
 
-set(UPDATE_COMMAND "git")
+# Link
+libavl.so: avl.lo
+
+# Dependencies
+avl.o: avl.h syslog.h
+avl.lo: avl.h syslog.h
+
